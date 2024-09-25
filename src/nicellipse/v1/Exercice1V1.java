@@ -2,19 +2,21 @@ package nicellipse.v1;
 
 import nicellipse.component.NiRectangle;
 import nicellipse.component.NiSpace;
-
+import java.util.Random;
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 
 public class Exercice1V1 {
-	NiSpace space = new NiSpace("Exercice 1", new Dimension(200, 150));
+	NiSpace space = new NiSpace("Exercice 1", new Dimension(600, 450));
 	NiRectangle robi = new NiRectangle();
+	NiRectangle robi2 = new NiRectangle();
+	NiRectangle robi3 = new NiRectangle();
 
-	void moveRobi(int x, int y) {
+	void moveRobi(int x, int y, NiRectangle r) {
 		final Runnable doit = new Runnable() {
 			public void run() {
-				robi.setLocation(new Point(x, y));
+				r.setLocation(new Point(x, y));
 				try {
 					Thread.sleep(2);
 				} catch (InterruptedException e) {
@@ -34,32 +36,61 @@ public class Exercice1V1 {
 	}
 
 	public Exercice1V1() {
-		space.setBackground(Color.lightGray);
-		robi.setBackground(Color.red);
-		robi.setSize(20, 20);
-		space.add(robi);
+		this.init();
 
 		space.openInWindow();
 
-		int x = 0, y = 0;
+		this.movement();
+
+	}
+
+	private void init(){
+		space.setBackground(Color.lightGray);
+		robi.setBackground(Color.red);
+		robi2.setBackground(Color.blue);
+		robi3.setBackground(Color.green);
+		robi.setSize(20, 20);
+		robi2.setSize(20, 20);
+		robi3.setSize(20, 20);
+		space.add(robi);
+		space.add(robi2);
+		space.add(robi3);
+	}
+
+	private void movement(){
+		Random random = new Random();
+		int x = 0;
+		int x2 = 0;
+		int x3 = 0;
+		int y = random.nextInt(56);
+		int y2 = random.nextInt(76) + 65;
+		int y3 = random.nextInt(76) + 150;
+
+		int vitesse = random.nextInt(2) + 1;
+		int vitesse2 = random.nextInt(2) + 1;
+		int vitesse3 = random.nextInt(2) + 1;
+
 		while (true) {
 			while (x < space.getWidth() - robi.getWidth()) {
-				x = x + 1;
-				this.moveRobi(x, y);
+				x = x + vitesse;
+				x2 = x2 + vitesse2;
+				x3 = x3 + vitesse3;
+				this.moveRobi(x, y, robi);
+				this.moveRobi(x2, y2, robi2);
+				this.moveRobi(x3, y3, robi3);
 			}
-			while (y < space.getHeight() - robi.getHeight()) {
-				y = y + 1;
-				this.moveRobi(x, y);
-			}
-			while (x > 0) {
-				x = x - 1;
-				this.moveRobi(x, y);
-			}
-			while (y > 0) {
-				y = y - 1;
-				this.moveRobi(x, y);
-			}
-			robi.setBackground(new Color((int) (Math.random() * 0x1000000)));
+			x = 0;
+			x2 = 0;
+			x3 = 0;
+			y = random.nextInt(66);
+			y2 = random.nextInt(76) + 65;
+			y3 = random.nextInt(76) + 150;
+			this.moveRobi(x, y, robi);
+			this.moveRobi(x2, y2, robi2);
+			this.moveRobi(x3, y3, robi3);
+			vitesse = random.nextInt(2) + 1;
+			vitesse2 = random.nextInt(2) + 1;
+			vitesse3 = random.nextInt(2) + 1;
 		}
 	}
 
