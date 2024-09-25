@@ -13,14 +13,14 @@ public class Satellite extends JPanel implements NiBorderedComponent {
 
     private int y;
 
-    public Satellite(){
+    public Satellite(int y){
         this.defaultSetup();
         this.setDimension(new Dimension(20,20));
         this.setLayout(null);
         this.setBackground(Color.red);
         this.vitesse = 1;
         this.x = 0;
-        this.y = 75;
+        this.y = y;
     }
 
     public Point move(){
