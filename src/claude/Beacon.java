@@ -15,7 +15,6 @@ public class Beacon {
     private boolean isMovingToSurface = false;
     private boolean isMovingToDepth = false;
     private int targetY;
-    private static final int SYNC_RANGE_X = 800; // Zone de détection horizontale
 
     // Enum déplacé à l'intérieur de la classe
     public enum MovementPattern {
@@ -101,13 +100,14 @@ public class Beacon {
     }
 
     public void checkForSatellite(Satellite satellite) {
-        // On vérifie uniquement si le satellite est aligné verticalement (même X).
-        if (isSurfaced && (Math.abs(satellite.getX()) == this.x)) {
+        // On définit une petite zone de détection autour de la position de la balise
+        // Plus le satellite est haut, plus la zone de détection est large
+        int detectionRange = 5; // Zone de base de détection (peut être ajustée)
+        if (isSurfaced) {
             int diffX = Math.abs(satellite.getX() - this.x);
-            System.out.println("Difference X: " + diffX +
-                    " (Satellite X: " + satellite.getX() +
-                    ", Balise X: " + this.x + ")");
-            announcer.announce(new SynchronizationRequestEvent(this));
+            if (diffX <= detectionRange) {
+                announcer.announce(new SynchronizationRequestEvent(this));
+            }
         }
     }
 
