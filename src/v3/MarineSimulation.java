@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class MarineSimulation {
-    // Constants for boundaries
+    // Constantes
     private static final int SKY_MIN_Y = 50;
     private static final int SKY_MAX_Y = 150;
     private static final int SEA_MIN_Y = 350;
@@ -41,7 +41,7 @@ public class MarineSimulation {
         container.add(sea, 0);
 
         // Création des satellites
-        int numSatellites = 10;
+        int numSatellites = 4;
         ArrayList<Integer> hauteurUtilise = new ArrayList<>();
 
         // Calcul de l'espacement moyen pour les satellites
@@ -72,7 +72,7 @@ public class MarineSimulation {
         }
 
         // Création des balises
-        int numBalise = 10;
+        int numBalise = 4;
         hauteurUtilise.clear();
 
         int espaceDispoBalise = SEA_MAX_Y - SEA_MIN_Y;
