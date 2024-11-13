@@ -28,8 +28,7 @@ public class BeaconView extends NiRectangle implements MarineListener {
         }
         if (this.getParent() != null && this.getParent().getComponents().length > 0) {
             for (int i = 0; i < this.getParent().getComponents().length; i++) {
-                if (this.getParent().getComponents()[i] instanceof SatelliteView) {
-                    SatelliteView satelliteView = (SatelliteView) this.getParent().getComponents()[i];
+                if (this.getParent().getComponents()[i] instanceof SatelliteView satelliteView) {
                     model.checkForSatellite(satelliteView.getModel());
                 }
             }
@@ -44,5 +43,9 @@ public class BeaconView extends NiRectangle implements MarineListener {
     @Override
     public void onDataTransferComplete(DataTransferEvent evt) {
         this.setBackground(Color.blue);
+    }
+
+    public Beacon getModel() {
+        return model;
     }
 }

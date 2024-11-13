@@ -15,6 +15,8 @@ public class Beacon {
     private boolean isMovingToSurface = false;
     private boolean isMovingToDepth = false;
     private int targetY;
+    private boolean isSynchronizing = false;
+    private Satellite currentSynchronizingSatellite = null;
 
     // Enum déplacé à l'intérieur de la classe
     public enum MovementPattern {
@@ -29,6 +31,18 @@ public class Beacon {
         this.announcer = new Announcer();
         this.memory = (int)(Math.random() * ((double) MAX_MEMORY / 2));
     }
+
+    public void checkForSatellite(Satellite satellite) {
+        int detectionRange = 5;
+        if (isSurfaced && !isSynchronizing) {  // Vérifie si la balise n'est pas déjà en synchronisation
+            int diffX = Math.abs(satellite.getX() - this.x);
+            if (diffX <= detectionRange) {
+                // On passe maintenant le satellite ciblé dans l'événement
+                announcer.announce(new SynchronizationRequestEvent(this, satellite));
+            }
+        }
+    }
+
 
     public void register(Object o) {
         announcer.register(o, SynchronizationRequestEvent.class);
@@ -99,20 +113,10 @@ public class Beacon {
         }
     }
 
-    public void checkForSatellite(Satellite satellite) {
-        int detectionRange = 5;
-        if (isSurfaced) {
-            int diffX = Math.abs(satellite.getX() - this.x);
-            if (diffX <= detectionRange) {
-                // On passe maintenant le satellite ciblé dans l'événement
-                announcer.announce(new SynchronizationRequestEvent(this, satellite));
-            }
-        }
-    }
-
-
     public void startSync(Satellite satellite) {
-        if (!satellite.isSynchronizing()) {
+        if (!satellite.isSynchronizing() && !isSynchronizing) {  // Vérifie si ni le satellite ni la balise ne sont en synchronisation
+            isSynchronizing = true;
+            currentSynchronizingSatellite = satellite;
             satellite.startSynchronization();
             new Thread(() -> {
                 try {
@@ -130,10 +134,11 @@ public class Beacon {
         isSurfaced = false;
         isMovingToDepth = true;
         isCollecting = false;
+        isSynchronizing = false;
+        currentSynchronizingSatellite = null;
         targetY = originalY;
         announcer.announce(new DataTransferEvent(this));
     }
-
     private void move() {
         if (isSurfaced) return;
 
