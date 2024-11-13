@@ -1,6 +1,6 @@
-package Visitor;
+package v3.Visitor;
 
-public class Assignment extends Statement{
+public class Assignment extends Statement {
     public Expr rightHandSide;
     public Variable leftHandSide;
     public Assignment(Variable leftHandSide,Expr rightHandSide) {
