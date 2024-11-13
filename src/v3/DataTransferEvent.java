@@ -1,6 +1,4 @@
-package claude;
-
-import java.util.EventObject;
+package v3;
 
 public class DataTransferEvent extends AbstractMarineEvent {
     private static final long serialVersionUID = 1L;
@@ -11,6 +9,6 @@ public class DataTransferEvent extends AbstractMarineEvent {
 
     @Override
     public void sentTo(Object target) {
-        ((MarineListener)target).onDataTransferComplete(this);
+        ((MarineListener)target).echangeFini(this);
     }
 }

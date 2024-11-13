@@ -1,40 +1,40 @@
-package claude;
+package v3;
 
-public class Beacon {
+public class Balise {
     private int x, y;
-    private int memory;
-    private static final int MAX_MEMORY = 100;
-    private boolean isCollecting = true;
-    private boolean isSurfaced = false;
+    private int memoire;
+    private static final int MAX_MEMOIRE = 100;
+    private boolean collecte = true;
+    private boolean surface = false;
     final private MovementPattern pattern;
     final private Announcer announcer;
     private int originalY;
     private static final int MIN_Y = 300;
     private static final int MAX_Y = 500;
     private static final int SURFACE_SPEED = 2; // Vitesse de remontée/descente
-    private boolean isMovingToSurface = false;
-    private boolean isMovingToDepth = false;
+    private boolean goToSurface = false;
+    private boolean goToFond = false;
     private int targetY;
-    private boolean isSynchronizing = false;
-    private Satellite currentSynchronizingSatellite = null;
+    private boolean synchronisation = false;
+    private Satellite satelliteCourant = null;
 
     // Enum déplacé à l'intérieur de la classe
     public enum MovementPattern {
         HORIZONTAL, VERTICAL, SINUSOIDAL, STATIONARY
     }
 
-    public Beacon(int x, int y, MovementPattern pattern) {
+    public Balise(int x, int y, MovementPattern pattern) {
         this.x = x;
         this.y = y;
         this.originalY = y;
         this.pattern = pattern;
         this.announcer = new Announcer();
-        this.memory = (int)(Math.random() * ((double) MAX_MEMORY / 2));
+        this.memoire = (int)(Math.random() * ((double) MAX_MEMOIRE / 2));
     }
 
-    public void checkForSatellite(Satellite satellite) {
+    public void checkSatellite(Satellite satellite) {
         int detectionRange = 5;
-        if (isSurfaced && !isSynchronizing) {  // Vérifie si la balise n'est pas déjà en synchronisation
+        if (surface && !synchronisation) {  // Vérifie si la balise n'est pas déjà en synchronisation
             int diffX = Math.abs(satellite.getX() - this.x);
             if (diffX <= detectionRange) {
                 // On passe maintenant le satellite ciblé dans l'événement
@@ -57,67 +57,67 @@ public class Beacon {
         return y;
     }
 
-    public boolean isSurfaced() {
-        return isSurfaced;
+    public boolean isSurface() {
+        return surface;
     }
 
     public void update() {
         // Gestion de la collecte normale
-        if (!isMovingToSurface && !isMovingToDepth && isCollecting) {
-            collectData();
+        if (!goToSurface && !goToFond && collecte) {
+            collecte();
             move();
         }
 
         // Déclenche la remontée si la mémoire est pleine
-        if (memory >= MAX_MEMORY && !isSurfaced && !isMovingToSurface) {
+        if (memoire >= MAX_MEMOIRE && !surface && !goToSurface) {
             surfaceForSync();
         }
 
         // Animation de remontée
-        if (isMovingToSurface) {
+        if (goToSurface) {
             if (Math.abs(y - targetY) <= SURFACE_SPEED) {
                 y = targetY;
-                isMovingToSurface = false;
-                isSurfaced = true;
+                goToSurface = false;
+                surface = true;
             } else {
                 y -= SURFACE_SPEED; // Remonte progressivement
             }
         }
 
         // Animation de descente
-        if (isMovingToDepth) {
+        if (goToFond) {
             if (Math.abs(y - targetY) <= SURFACE_SPEED) {
                 y = targetY;
-                isMovingToDepth = false;
-                isCollecting = true;
+                goToFond = false;
+                collecte = true;
             } else {
                 y += SURFACE_SPEED; // Descend progressivement
             }
         }
     }
 
-    private void collectData() {
-        if (!isSurfaced) {
-            memory++;
-            if (memory > MAX_MEMORY) {
-                memory = MAX_MEMORY;
+    private void collecte() {
+        if (!surface) {
+            memoire++;
+            if (memoire > MAX_MEMOIRE) {
+                memoire = MAX_MEMOIRE;
             }
         }
     }
 
     private void surfaceForSync() {
-        if (!isMovingToSurface && !isSurfaced) {
-            isMovingToSurface = true;
+        if (!goToSurface && !surface) {
+            goToSurface = true;
             originalY = y;
             targetY = MIN_Y + 20; // Position de surface
         }
     }
 
     public void startSync(Satellite satellite) {
-        if (!satellite.isSynchronizing() && !isSynchronizing) {  // Vérifie si ni le satellite ni la balise ne sont en synchronisation
-            isSynchronizing = true;
-            currentSynchronizingSatellite = satellite;
-            satellite.startSynchronization();
+        if (!satellite.synchronisation() && !synchronisation) {  // Vérifie si ni le satellite ni la balise ne sont en synchronisation
+            synchronisation = true;
+            satelliteCourant = satellite;
+            satellite.startSynchro();
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
@@ -130,17 +130,17 @@ public class Beacon {
     }
 
     public void completeSync() {
-        memory = 0;
-        isSurfaced = false;
-        isMovingToDepth = true;
-        isCollecting = false;
-        isSynchronizing = false;
-        currentSynchronizingSatellite = null;
+        memoire = 0;
+        surface = false;
+        goToFond = true;
+        collecte = false;
+        synchronisation = false;
+        satelliteCourant = null;
         targetY = originalY;
         announcer.announce(new DataTransferEvent(this));
     }
     private void move() {
-        if (isSurfaced) return;
+        if (surface) return;
 
         switch (pattern) {
             case HORIZONTAL:
@@ -159,11 +159,11 @@ public class Beacon {
         }
     }
 
-    public boolean isMovingToSurface() {
-        return isMovingToSurface;
+    public boolean isGoToSurface() {
+        return goToSurface;
     }
 
-    public boolean isMovingToDepth() {
-        return isMovingToDepth;
+    public boolean isGoToFond() {
+        return goToFond;
     }
 }

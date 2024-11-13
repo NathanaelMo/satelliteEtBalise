@@ -1,15 +1,15 @@
-package claude;
+package v3;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import nicellipse.component.NiRectangle;
 import java.util.ArrayList;
 
-public class BeaconView extends NiRectangle implements MarineListener {
-    private Beacon model;
+public class BaliseView extends NiRectangle implements MarineListener {
+    private Balise model;
     private static final long serialVersionUID = 1L;
 
-    public BeaconView(Beacon model, ArrayList<Satellite> satellites) {
+    public BaliseView(Balise model, ArrayList<Satellite> satellites) {
         this.model = model;
         this.setBackground(Color.blue);
         this.setSize(new Dimension(10, 10));
@@ -21,7 +21,7 @@ public class BeaconView extends NiRectangle implements MarineListener {
 
     public void update() {
         this.setLocation(model.getX(), model.getY());
-        if (model.isSurfaced()) {
+        if (model.isSurface()) {
             this.setBackground(Color.yellow);
         } else {
             this.setBackground(Color.blue);
@@ -29,23 +29,23 @@ public class BeaconView extends NiRectangle implements MarineListener {
         if (this.getParent() != null && this.getParent().getComponents().length > 0) {
             for (int i = 0; i < this.getParent().getComponents().length; i++) {
                 if (this.getParent().getComponents()[i] instanceof SatelliteView satelliteView) {
-                    model.checkForSatellite(satelliteView.getModel());
+                    model.checkSatellite(satelliteView.getModel());
                 }
             }
         }
     }
 
     @Override
-    public void onSynchronizationRequest(SynchronizationRequestEvent evt) {
+    public void onSynchroRequest(SynchronizationRequestEvent evt) {
         this.setBackground(Color.yellow);
     }
 
     @Override
-    public void onDataTransferComplete(DataTransferEvent evt) {
+    public void echangeFini(DataTransferEvent evt) {
         this.setBackground(Color.blue);
     }
 
-    public Beacon getModel() {
+    public Balise getModel() {
         return model;
     }
 }

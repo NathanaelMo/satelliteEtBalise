@@ -1,10 +1,10 @@
-package claude;
+package v3;
 
 public class Satellite implements MarineListener {
     private int x, y;
     private final int speed;
-    private final boolean isGeosynchronous;
-    private boolean isSynchronizing = false;
+    private final boolean estSynchro;
+    private boolean synchronisation = false;
     private final MovementPattern pattern;
     private final int originalY;
 
@@ -15,12 +15,12 @@ public class Satellite implements MarineListener {
         HORIZONTAL, SINUSOIDAL, STATIONARY
     }
 
-    public Satellite(int x, int y, int speed, boolean isGeosynchronous, MovementPattern pattern) {
+    public Satellite(int x, int y, int speed, boolean estSynchro, MovementPattern pattern) {
         this.x = x;
         this.y = y;
         this.originalY = y;
         this.speed = speed;
-        this.isGeosynchronous = isGeosynchronous;
+        this.estSynchro = estSynchro;
         this.pattern = pattern;
     }
 
@@ -32,16 +32,16 @@ public class Satellite implements MarineListener {
         return y;
     }
 
-    public boolean isSynchronizing() {
-        return isSynchronizing;
+    public boolean synchronisation() {
+        return synchronisation;
     }
 
-    public void startSynchronization() {
-        isSynchronizing = true;
+    public void startSynchro() {
+        synchronisation = true;
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
-                isSynchronizing = false;
+                synchronisation = false;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -49,7 +49,7 @@ public class Satellite implements MarineListener {
     }
 
     public void update() {
-        if (!isSynchronizing && !isGeosynchronous) {
+        if (!synchronisation && !estSynchro) {
             move();
         }
     }
@@ -69,13 +69,13 @@ public class Satellite implements MarineListener {
     }
 
     @Override
-    public void onSynchronizationRequest(SynchronizationRequestEvent evt) {
-        Beacon beacon = (Beacon)evt.getSource();
-        beacon.startSync(this);
+    public void onSynchroRequest(SynchronizationRequestEvent evt) {
+        Balise balise = (Balise)evt.getSource();
+        balise.startSync(this);
     }
 
     @Override
-    public void onDataTransferComplete(DataTransferEvent evt) {
-        isSynchronizing = false;
+    public void echangeFini(DataTransferEvent evt) {
+        synchronisation = false;
     }
 }

@@ -1,4 +1,4 @@
-package claude;
+package v3;
 
 import nicellipse.component.NiRectangle;
 
@@ -16,7 +16,7 @@ public class SatelliteView extends NiRectangle {
 
     public void update() {
         this.setLocation(model.getX(), model.getY());
-        if (model.isSynchronizing()) {
+        if (model.synchronisation()) {
             this.setBackground(Color.green);
         } else {
             this.setBackground(Color.red);

@@ -1,5 +1,5 @@
 // Modifier SynchronizationRequestEvent pour inclure le satellite ciblé
-package claude;
+package v3;
 
 public class SynchronizationRequestEvent extends AbstractMarineEvent {
     private static final long serialVersionUID = 1L;
@@ -18,7 +18,7 @@ public class SynchronizationRequestEvent extends AbstractMarineEvent {
     public void sentTo(Object target) {
         // Ne notifie que si le target est le satellite ciblé ou n'est pas un satellite
         if (!(target instanceof Satellite) || target == targetSatellite) {
-            ((MarineListener)target).onSynchronizationRequest(this);
+            ((MarineListener)target).onSynchroRequest(this);
         }
     }
 }

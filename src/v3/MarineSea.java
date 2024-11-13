@@ -1,4 +1,4 @@
-package claude;
+package v3;
 
 import nicellipse.component.NiRectangle;
 
