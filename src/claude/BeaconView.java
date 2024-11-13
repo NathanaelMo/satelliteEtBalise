@@ -3,19 +3,20 @@ package claude;
 import java.awt.Color;
 import java.awt.Dimension;
 import nicellipse.component.NiRectangle;
+import java.util.ArrayList;
 
 public class BeaconView extends NiRectangle implements MarineListener {
     private Beacon model;
     private static final long serialVersionUID = 1L;
 
-    public BeaconView(Beacon model, Satellite satellite) {
+    public BeaconView(Beacon model, ArrayList<Satellite> satellites) {
         this.model = model;
         this.setBackground(Color.blue);
         this.setSize(new Dimension(10, 10));
-        // On enregistre la vue pour recevoir les événements de la balise
         model.register(this);
-        // On enregistre le satellite pour recevoir les événements de la balise
-        model.register(satellite);
+        for (Satellite satellite : satellites) {
+            model.register(satellite);
+        }
     }
 
     public void update() {
@@ -25,7 +26,6 @@ public class BeaconView extends NiRectangle implements MarineListener {
         } else {
             this.setBackground(Color.blue);
         }
-        // Vérifie si un satellite est au-dessus
         if (this.getParent() != null && this.getParent().getComponents().length > 0) {
             for (int i = 0; i < this.getParent().getComponents().length; i++) {
                 if (this.getParent().getComponents()[i] instanceof SatelliteView) {
@@ -38,13 +38,11 @@ public class BeaconView extends NiRectangle implements MarineListener {
 
     @Override
     public void onSynchronizationRequest(SynchronizationRequestEvent evt) {
-        // Change la couleur en jaune quand une demande de synchronisation est reçue
         this.setBackground(Color.yellow);
     }
 
     @Override
     public void onDataTransferComplete(DataTransferEvent evt) {
-        // Retourne à la couleur bleue une fois la synchronisation terminée
         this.setBackground(Color.blue);
     }
 }

@@ -100,13 +100,12 @@ public class Beacon {
     }
 
     public void checkForSatellite(Satellite satellite) {
-        // On définit une petite zone de détection autour de la position de la balise
-        // Plus le satellite est haut, plus la zone de détection est large
-        int detectionRange = 5; // Zone de base de détection (peut être ajustée)
+        int detectionRange = 5;
         if (isSurfaced) {
             int diffX = Math.abs(satellite.getX() - this.x);
             if (diffX <= detectionRange) {
-                announcer.announce(new SynchronizationRequestEvent(this));
+                // On passe maintenant le satellite ciblé dans l'événement
+                announcer.announce(new SynchronizationRequestEvent(this, satellite));
             }
         }
     }
