@@ -2,149 +2,202 @@ package v4;
 
 import nicellipse.component.NiRectangle;
 import nicellipse.component.NiSpace;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import v4.antlr.MarineShellLexer;
+import v4.antlr.MarineShellParser;
 
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Random;
+import javax.swing.SwingUtilities;
 
 public class MarineSimulation {
-    // Constantes
-    private static final int SKY_MIN_Y = 50;
-    private static final int SKY_MAX_Y = 150;
-    private static final int SEA_MIN_Y = 350;
-    private static final int SEA_MAX_Y = 500;
-    private static final int MIN_VERTICAL_DISTANCE = 1;
     private static final int TAILLE_FENETRE = 800;
-    private static final int MAX_SATELLITES_STATIONNAIRES = 3; // Maximum de satellites stationnaires
+    private static ArrayList<BaliseView> baliseViews = new ArrayList<>();
+    private static ArrayList<SatelliteView> satelliteViews = new ArrayList<>();
+    private static volatile boolean running = true;
+    private static NiRectangle container;
+    private static NiSpace space;
+    private static boolean shellMarineIsRunning= true;
+    private static BufferedReader reader;
 
     public static void main(String[] args) {
+        // Démarrer l'interface graphique dans l'EDT (Event Dispatch Thread)
+        SwingUtilities.invokeLater(() -> {
+            System.out.println("DEBUG: Starting MarineSimulation in EDT");
+            createAndShowGUI();
+        });
+    }
 
-
-        Random random = new Random();
-
-        NiSpace space = new NiSpace("Marine Simulation", new Dimension(TAILLE_FENETRE, 600));
-        NiRectangle container = new NiRectangle();
+    private static void createAndShowGUI() {
+        // Création de l'espace de simulation
+        space = new NiSpace("Marine Simulation", new Dimension(TAILLE_FENETRE, 600));
+        container = new NiRectangle();
         container.setLayout(null);
         container.setSize(new Dimension(TAILLE_FENETRE, 600));
+        container.setVisible(true);
         space.add(container);
-
-        // Liste pour stocker les satellites
-        ArrayList<Satellite> satelliteList = new ArrayList<>();
-        ArrayList<BaliseView> baliseViews = new ArrayList<>();
-        ArrayList<SatelliteView> satelliteViews = new ArrayList<>();
-        int stationaryCount = 0; // Compteur pour les satellites stationnaires
+        space.setVisible(true);
 
         // Ajout du ciel et de la mer
         MarineSky sky = new MarineSky(TAILLE_FENETRE, 320);
         sky.setLocation(0, 0);
-        container.add(sky, 0);
+        sky.setVisible(true);
+        container.add(sky);
 
         MarineSea sea = new MarineSea(TAILLE_FENETRE, 300);
         sea.setLocation(0, 320);
-        container.add(sea, 0);
-
-        // Création des satellites
-        int numSatellites = 4;
-        ArrayList<Integer> hauteurUtilise = new ArrayList<>();
-
-        // Calcul de l'espacement moyen pour les satellites
-        int espaceDispoSat = SKY_MAX_Y - SKY_MIN_Y;
-        int espaceMoyenSat = espaceDispoSat / numSatellites;
-
-        for (int i = 0; i < numSatellites; i++) {
-            int baseY = SKY_MIN_Y + (i * espaceMoyenSat);
-            int yPos = baseY + random.nextInt(espaceMoyenSat);
-            hauteurUtilise.add(yPos);
-
-            int xPos = (TAILLE_FENETRE / numSatellites) * i + random.nextInt(TAILLE_FENETRE /numSatellites);
-            int speed = random.nextInt(3) + 2;
-            boolean synchro = random.nextBoolean();
-
-            // Obtention du pattern en tenant compte du maximum de stationnaires
-            Satellite.MovementPattern pattern = getRandomSatellitePattern(random, stationaryCount);
-            if (pattern == Satellite.MovementPattern.STATIONARY) {
-                stationaryCount++;
-            }
-
-            Satellite satellite = new Satellite(xPos, yPos, speed, synchro, pattern);
-            SatelliteView satelliteView = new SatelliteView(satellite);
-
-            satelliteList.add(satellite);
-            satelliteViews.add(satelliteView);
-            container.add(satelliteView, 1);
-        }
-
-        // Création des balises
-        int numBalise = 4;
-        hauteurUtilise.clear();
-
-        int espaceDispoBalise = SEA_MAX_Y - SEA_MIN_Y;
-        int espaceMoyenBalise = espaceDispoBalise / numBalise;
-
-        for (int i = 0; i < numBalise; i++) {
-            int baseY = SEA_MIN_Y + (i * espaceMoyenBalise);
-            int yPos = baseY + random.nextInt(espaceMoyenBalise);
-            hauteurUtilise.add(yPos);
-
-            int xPos = (TAILLE_FENETRE / numBalise) * i + random.nextInt(TAILLE_FENETRE /numBalise);
-            Balise.MovementPattern pattern = getRandomBalisePattern(random);
-
-            Balise balise = new Balise(xPos, yPos, pattern);
-            BaliseView baliseView = new BaliseView(balise, satelliteList);
-
-            baliseViews.add(baliseView);
-            container.add(baliseView, 0);
-        }
+        sea.setVisible(true);
+        container.add(sea);
 
         space.openInWindow();
 
-        // Boucle principale
-        while (true) {
-            for (BaliseView baliseView : baliseViews) {
-                baliseView.getModel().update();
-                baliseView.update();
-            }
+        // Démarrer le thread de mise à jour
+        startUpdateThread();
 
-            for (SatelliteView satelliteView : satelliteViews) {
-                satelliteView.getModel().update();
-                satelliteView.update();
-            }
-
+        Thread shellThread = new Thread(() -> {
+            System.out.println("MarineShell started. Type 'exit' to quit.");
+            reader = new BufferedReader(new InputStreamReader(System.in));
             try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                while (shellMarineIsRunning) {
+                    System.out.print("marine> ");
+                    String input = reader.readLine();
+
+                    if (input == null || input.equalsIgnoreCase("exit")) {
+                        shellMarineIsRunning = false;
+                        continue;
+                    }
+
+                    try {
+                        // Ajouter un point-virgule si l'utilisateur l'a oublié
+                        if (!input.trim().endsWith(";")) {
+                            input += ";";
+                        }
+
+                        // Création du lexer
+                        MarineShellLexer lexer = new MarineShellLexer(
+                                CharStreams.fromString(input)
+                        );
+                        lexer.removeErrorListeners();
+                        lexer.addErrorListener(new CustomErrorListener());
+
+                        // Création du stream de tokens
+                        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+                        // Création du parser
+                        MarineShellParser parser = new MarineShellParser(tokens);
+                        parser.removeErrorListeners();
+                        parser.addErrorListener(new CustomErrorListener());
+
+                        // Parsing et exécution
+                        ParseTree tree = parser.program();
+                        visitor.visit(tree);
+
+                    } catch (Exception e) {
+                        System.err.println("Error executing command: " + e.getMessage());
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("Error reading input: " + e.getMessage());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                cleanup();
+            }
+        });
+
+        shellThread.setName("MarineShell-Thread");
+        shellThread.start();
+    }
+
+
+    public static void addSatelliteView(SatelliteView view) {
+        if (view != null) {
+            System.out.println("DEBUG: Adding satellite view");
+            // S'assurer que l'ajout se fait dans l'EDT
+            SwingUtilities.invokeLater(() -> {
+                satelliteViews.add(view);
+                view.setVisible(true);
+                container.add(view);
+                container.revalidate();
+                container.repaint();
+                System.out.println("DEBUG: Satellite view added to container, total: " + satelliteViews.size());
+            });
+        }
+    }
+
+    public static void addBaliseView(BaliseView view) {
+        if (view != null) {
+            System.out.println("DEBUG: Adding balise view");
+            // S'assurer que l'ajout se fait dans l'EDT
+            SwingUtilities.invokeLater(() -> {
+                baliseViews.add(view);
+                view.setVisible(true);
+                container.add(view);
+                container.revalidate();
+                container.repaint();
+                System.out.println("DEBUG: Balise view added to container, total: " + baliseViews.size());
+            });
+        }
+    }
+
+    public static void updateViews() {
+        // Mettre à jour les positions dans l'EDT
+        SwingUtilities.invokeLater(() -> {
+            // Update satellites
+            for (SatelliteView view : satelliteViews) {
+                if (view != null && view.getModel() != null) {
+                    view.getModel().update();
+                    view.update();
+                    System.out.println("DEBUG: Updated satellite position: " + 
+                        view.getModel().getX() + "," + view.getModel().getY());
+                }
             }
 
+            // Update balises
+            for (BaliseView view : baliseViews) {
+                if (view != null && view.getModel() != null) {
+                    view.getModel().update();
+                    view.update();
+                    System.out.println("DEBUG: Updated balise position: " + 
+                        view.getModel().getX() + "," + view.getModel().getY());
+                }
+            }
+
+            container.revalidate();
             container.repaint();
-        }
+        });
+    }
+    public void stopShell() {
+        shellMarineIsRunning = false;
     }
 
-    private static Balise.MovementPattern getRandomBalisePattern(Random random) {
-        Balise.MovementPattern[] patterns = {
-                Balise.MovementPattern.HORIZONTAL,
-                Balise.MovementPattern.STATIONARY,
-                Balise.MovementPattern.SINUSOIDAL
-        };
-        return patterns[random.nextInt(patterns.length)];
-    }
-
-    private static Satellite.MovementPattern getRandomSatellitePattern(Random random, int nbSatStationnaire) {
-        // Si on a atteint le maximum de satellites stationnaires, on ne peut plus en créer
-        if (nbSatStationnaire >= MAX_SATELLITES_STATIONNAIRES) {
-            Satellite.MovementPattern[] patterns = {
-                    Satellite.MovementPattern.HORIZONTAL,
-                    Satellite.MovementPattern.SINUSOIDAL
-            };
-            return patterns[random.nextInt(patterns.length)];
-        } else {
-            // Sinon on peut avoir tous les patterns
-            Satellite.MovementPattern[] patterns = {
-                    Satellite.MovementPattern.HORIZONTAL,
-                    Satellite.MovementPattern.STATIONARY,
-                    Satellite.MovementPattern.SINUSOIDAL
-            };
-            return patterns[random.nextInt(patterns.length)];
+    private static void cleanup() {
+        try {
+            reader.close();
+        } catch (IOException e) {
+            System.err.println("Error closing reader: " + e.getMessage());
         }
+    }
+    public static void startUpdateThread() {
+        Thread updateThread = new Thread(() -> {
+            System.out.println("DEBUG: Update thread started");
+            while (running) {
+                updateViews();
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "Update Thread");
+        
+        // Ne pas utiliser un thread daemon pour être sûr qu'il continue à s'exécuter
+        updateThread.setDaemon(false);
+        updateThread.start();
     }
 }

@@ -85,15 +85,15 @@ public class CommandClasses {
             Balise.MovementPattern pattern = parseBeaconPattern((String) params.getOrDefault("pattern", "#horizontal"));
 
             Balise beacon = new Balise(0, depth, pattern);
-            //BaliseView beaconView = new BaliseView(beacon);
+            BaliseView beaconView = new BaliseView(beacon);
 
-            //if (params.containsKey("color")) {
-              //  beaconView.setBackground(parseColor((String) params.get("color")));
-            //}
+            if (params.containsKey("color")) {
+                beaconView.setBackground(parseColor((String) params.get("color")));
+            }
 
-            //context.getContainer().add(beaconView);
-            //context.setVariable(variableName, beacon);
-            //context.setVariable(variableName + "_view", beaconView);
+            context.getContainer().add(beaconView);
+            context.setVariable(variableName, beacon);
+            context.setVariable(variableName + "_view", beaconView);
         }
     }
 
@@ -113,6 +113,86 @@ public class CommandClasses {
                 ((Balise) component).update();
             } else if (component instanceof Satellite) {
                 ((Satellite) component).update();
+            }
+        }
+    }
+    // Stop Command
+    static class StopCommand implements Command {
+        private final String targetName;
+
+        public StopCommand(String targetName) {
+            this.targetName = targetName;
+        }
+
+        @Override
+        public void execute(SimulationContext context) {
+            Object component = context.getVariable(targetName);
+            if (component instanceof Satellite) {
+                ((Satellite) component).stop();
+            } else if (component instanceof Balise) {
+                ((Balise) component).stop();
+            }
+        }
+    }
+
+    // Set Speed Command
+    static class SetSpeedCommand implements Command {
+        private final String targetName;
+        private final int speed;
+
+        public SetSpeedCommand(String targetName, int speed) {
+            this.targetName = targetName;
+            this.speed = speed;
+        }
+
+        @Override
+        public void execute(SimulationContext context) {
+            Object component = context.getVariable(targetName);
+            if (component instanceof Satellite) {
+                ((Satellite) component).setSpeed(speed);
+            }
+            // Note: Balise n'a pas de vitesse à modifier
+        }
+    }
+
+    // Set Pattern Command
+    static class SetPatternCommand implements Command {
+        private final String targetName;
+        private final String pattern;
+
+        public SetPatternCommand(String targetName, String pattern) {
+            this.targetName = targetName;
+            this.pattern = pattern;
+        }
+
+        @Override
+        public void execute(SimulationContext context) {
+            Object component = context.getVariable(targetName);
+            if (component instanceof Satellite) {
+                ((Satellite) component).setPattern(CommandUtils.parsePattern(pattern));
+            } else if (component instanceof Balise) {
+                ((Balise) component).setPattern(CommandUtils.parseBeaconPattern(pattern));
+            }
+        }
+    }
+
+    // Set Color Command
+    static class SetColorCommand implements Command {
+        private final String targetName;
+        private final String color;
+
+        public SetColorCommand(String targetName, String color) {
+            this.targetName = targetName;
+            this.color = color;
+        }
+
+        @Override
+        public void execute(SimulationContext context) {
+            Object view = context.getVariable(targetName + "_view");
+            if (view instanceof SatelliteView) {
+                ((SatelliteView) view).setBackground(CommandUtils.parseColor(color));
+            } else if (view instanceof BaliseView) {
+                ((BaliseView) view).setBackground(CommandUtils.parseColor(color));
             }
         }
     }
