@@ -2,6 +2,8 @@ package v3;
 
 import nicellipse.component.NiRectangle;
 import nicellipse.component.NiSpace;
+import v4.VueCiel;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
@@ -12,9 +14,8 @@ public class MarineSimulation {
     private static final int SKY_MAX_Y = 150;
     private static final int SEA_MIN_Y = 350;
     private static final int SEA_MAX_Y = 500;
-    private static final int MIN_VERTICAL_DISTANCE = 1;
     private static final int TAILLE_FENETRE = 800;
-    private static final int MAX_SATELLITES_STATIONNAIRES = 3; // Maximum de satellites stationnaires
+    private static final int MAX_SATELLITES_STATIONNAIRES = 0; // Maximum de satellites stationnaires
 
     public static void main(String[] args) {
         Random random = new Random();
@@ -36,7 +37,7 @@ public class MarineSimulation {
         sky.setLocation(0, 0);
         container.add(sky, 0);
 
-        MarineSea sea = new MarineSea(TAILLE_FENETRE, 300);
+        VueCiel sea = new VueCiel(TAILLE_FENETRE, 300);
         sea.setLocation(0, 320);
         container.add(sea, 0);
 
