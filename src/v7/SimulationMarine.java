@@ -67,9 +67,17 @@ public class SimulationMarine {
 
             // Sélection aléatoire du type de déplacement
             ModeleBalise.TypeDeplacement[] types = ModeleBalise.TypeDeplacement.values();
-            ModeleBalise.TypeDeplacement typeDeplacement = types[random.nextInt(types.length)];
+            int deplacementAleatoire = (int) (Math.random() * 3) + 1;
+            Deplacement deplacement=null;
+            if (deplacementAleatoire==1){
+                deplacement = new Sinusoidale();
+            }else if (deplacementAleatoire==2){
+                deplacement = new Horizontal();
+            }else {
+                deplacement = new Stationnaire();
+            }
 
-            ModeleBalise modeleBalise = new ModeleBalise(x, y, typeDeplacement, intervalleRemontee, controleur);
+            ModeleBalise modeleBalise = new ModeleBalise(x, y, deplacement, intervalleRemontee, controleur);
             balises.add(modeleBalise);
 
             VueBalise vueBalise = new VueBalise(modeleBalise);
