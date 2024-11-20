@@ -6,7 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Controleur implements EcouteurEvenement {
-    private final Diffuseur diffuseur = new Diffuseur();
+    private final Announcer announcer = new Announcer();
     private final Map<ModeleBalise, Position> balisesEnAttente = new HashMap<>();
     private final Map<ModeleSatellite, Position> positionsSatellites = new HashMap<>();
 
@@ -26,8 +26,8 @@ public class Controleur implements EcouteurEvenement {
 
     public Controleur() {
         // Écoute les positions des balises et satellites
-        diffuseur.enregistrer("POSITION_SATELLITE", this);
-        diffuseur.enregistrer("BALISE_PRETE", this);
+        announcer.enregistrer("POSITION_SATELLITE", this);
+        announcer.enregistrer("BALISE_PRETE", this);
     }
 
     @Override
@@ -90,8 +90,8 @@ public class Controleur implements EcouteurEvenement {
         synchronisationsSatellites.put(satellite, balise);
 
         // Notifie les deux parties
-        diffuseur.diffuserCible(new Evenement(this, Evenement.DEBUT_SYNC, satellite), satellite);
-        diffuseur.diffuserCible(new Evenement(this, Evenement.DEBUT_SYNC, balise), balise);
+        announcer.diffuserCible(new Evenement(this, Evenement.DEBUT_SYNC, satellite), satellite);
+        announcer.diffuserCible(new Evenement(this, Evenement.DEBUT_SYNC, balise), balise);
 
         // Programme la fin de la synchronisation
         new Timer(true).schedule(new TimerTask() {
@@ -108,11 +108,11 @@ public class Controleur implements EcouteurEvenement {
         synchronisationsSatellites.remove(satellite);
 
         // Notifie les deux parties
-        diffuseur.diffuserCible(new Evenement(this, Evenement.FIN_SYNC, satellite), satellite);
-        diffuseur.diffuserCible(new Evenement(this, Evenement.FIN_SYNC, balise), balise);
+        announcer.diffuserCible(new Evenement(this, Evenement.FIN_SYNC, satellite), satellite);
+        announcer.diffuserCible(new Evenement(this, Evenement.FIN_SYNC, balise), balise);
     }
 
-    public Diffuseur getDiffuseur() {
-        return diffuseur;
+    public Announcer getDiffuseur() {
+        return announcer;
     }
 }

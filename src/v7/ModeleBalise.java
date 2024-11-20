@@ -7,7 +7,7 @@ public class ModeleBalise implements EcouteurEvenement {
     private int x, y;
     private final TypeDeplacement typeDeplacement;
     private boolean enSynchronisation = false;
-    private final Diffuseur diffuseur;
+    private final Announcer announcer;
     private boolean aNotifiePosition = false;
     private Timer timerRemontee;
     private final int intervalleRemontee; // en millisecondes
@@ -34,11 +34,11 @@ public class ModeleBalise implements EcouteurEvenement {
         this.yOriginal = y;
         this.typeDeplacement = typeDeplacement;
         this.intervalleRemontee = intervalleRemonteeSecondes * 1000; // conversion en millisecondes
-        this.diffuseur = controleur.getDiffuseur();
+        this.announcer = controleur.getDiffuseur();
 
         // S'enregistre pour recevoir les événements de synchronisation
-        diffuseur.enregistrer(Evenement.DEBUT_SYNC, this);
-        diffuseur.enregistrer(Evenement.FIN_SYNC, this);
+        announcer.enregistrer(Evenement.DEBUT_SYNC, this);
+        announcer.enregistrer(Evenement.FIN_SYNC, this);
 
         // Démarre le timer pour les remontées périodiques
         demarrerTimerRemontee();
@@ -101,7 +101,7 @@ public class ModeleBalise implements EcouteurEvenement {
             // Si à la surface, notifie sa position une seule fois
             if (estEnSurface() && !enSynchronisation && !aNotifiePosition) {
                 aNotifiePosition = true;
-                diffuseur.diffuser(new Evenement(this, "BALISE_PRETE",
+                announcer.diffuser(new Evenement(this, "BALISE_PRETE",
                         new Controleur.Position(x, Y_SURFACE)));
             }
         }

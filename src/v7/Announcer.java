@@ -2,7 +2,7 @@ package v7;
 
 import java.util.*;
 
-public class Diffuseur {
+public class Announcer {
     // Map qui associe chaque type d'événement à sa liste d'écouteurs
     private final Map<String, List<EcouteurEvenement>> ecouteurs = new HashMap<>();
 

@@ -4,17 +4,17 @@ public class ModeleSatellite implements EcouteurEvenement {
     private int x, y;
     private final int vitesse;
     private boolean enSynchronisation = false;
-    private final Diffuseur diffuseur;
+    private final Announcer announcer;
 
     public ModeleSatellite(int x, int y, int vitesse, Controleur controleur) {
         this.x = x;
         this.y = y;
         this.vitesse = vitesse;
-        this.diffuseur = controleur.getDiffuseur();
+        this.announcer = controleur.getDiffuseur();
 
         // S'enregistre uniquement pour les événements de synchronisation
-        diffuseur.enregistrer(Evenement.DEBUT_SYNC, this);
-        diffuseur.enregistrer(Evenement.FIN_SYNC, this);
+        announcer.enregistrer(Evenement.DEBUT_SYNC, this);
+        announcer.enregistrer(Evenement.FIN_SYNC, this);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ModeleSatellite implements EcouteurEvenement {
         // Le satellite continue toujours son mouvement
         deplacer();
         // Envoie sa position au contrôleur
-        diffuseur.diffuser(new Evenement(this, "POSITION_SATELLITE",
+        announcer.diffuser(new Evenement(this, "POSITION_SATELLITE",
                 new Controleur.Position(x, y)));
     }
 
