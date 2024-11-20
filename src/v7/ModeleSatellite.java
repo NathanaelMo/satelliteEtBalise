@@ -13,19 +13,19 @@ public class ModeleSatellite implements EcouteurEvenement {
         this.announcer = controleur.getDiffuseur();
 
         // S'enregistre uniquement pour les événements de synchronisation
-        announcer.enregistrer(Evenement.DEBUT_SYNC, this);
-        announcer.enregistrer(Evenement.FIN_SYNC, this);
+        announcer.register(TypeEvenement.DEBUT_SYNC, this);
+        announcer.register(TypeEvenement.FIN_SYNC, this);
     }
 
     @Override
     public void recevoirEvenement(Evenement evt) {
         switch (evt.getType()) {
-            case Evenement.DEBUT_SYNC:
+            case DEBUT_SYNC:
                 if (evt.getDonnees() == this) {
                     enSynchronisation = true;
                 }
                 break;
-            case Evenement.FIN_SYNC:
+            case FIN_SYNC:
                 if (this == evt.getDonnees()) {
                     enSynchronisation = false;
                 }
@@ -37,7 +37,7 @@ public class ModeleSatellite implements EcouteurEvenement {
         // Le satellite continue toujours son mouvement
         deplacer();
         // Envoie sa position au contrôleur
-        announcer.diffuser(new Evenement(this, "POSITION_SATELLITE",
+        announcer.announce(new Evenement(this, TypeEvenement.POSITION_SATELLITE,
                 new Controleur.Position(x, y)));
     }
 

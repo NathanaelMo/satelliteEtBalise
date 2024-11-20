@@ -26,18 +26,18 @@ public class Controleur implements EcouteurEvenement {
 
     public Controleur() {
         // Écoute les positions des balises et satellites
-        announcer.enregistrer("POSITION_SATELLITE", this);
-        announcer.enregistrer("BALISE_PRETE", this);
+        announcer.register(TypeEvenement.POSITION_SATELLITE, this);
+        announcer.register(TypeEvenement.BALISE_PRETE, this);
     }
 
     @Override
     public void recevoirEvenement(Evenement evt) {
         switch (evt.getType()) {
-            case "POSITION_SATELLITE":
+            case POSITION_SATELLITE:
                 mettreAJourPositionSatellite((ModeleSatellite)evt.getSource(),
                         (Position)evt.getDonnees());
                 break;
-            case "BALISE_PRETE":
+            case BALISE_PRETE:
                 gererBalisePrete((ModeleBalise)evt.getSource(),
                         (Position)evt.getDonnees());
                 break;
@@ -90,8 +90,8 @@ public class Controleur implements EcouteurEvenement {
         synchronisationsSatellites.put(satellite, balise);
 
         // Notifie les deux parties
-        announcer.diffuserCible(new Evenement(this, Evenement.DEBUT_SYNC, satellite), satellite);
-        announcer.diffuserCible(new Evenement(this, Evenement.DEBUT_SYNC, balise), balise);
+        announcer.announcerTargeted(new Evenement(this, TypeEvenement.DEBUT_SYNC, satellite), satellite);
+        announcer.announcerTargeted(new Evenement(this, TypeEvenement.DEBUT_SYNC, balise), balise);
 
         // Programme la fin de la synchronisation
         new Timer(true).schedule(new TimerTask() {
@@ -108,8 +108,8 @@ public class Controleur implements EcouteurEvenement {
         synchronisationsSatellites.remove(satellite);
 
         // Notifie les deux parties
-        announcer.diffuserCible(new Evenement(this, Evenement.FIN_SYNC, satellite), satellite);
-        announcer.diffuserCible(new Evenement(this, Evenement.FIN_SYNC, balise), balise);
+        announcer.announcerTargeted(new Evenement(this, TypeEvenement.FIN_SYNC, satellite), satellite);
+        announcer.announcerTargeted(new Evenement(this, TypeEvenement.FIN_SYNC, balise), balise);
     }
 
     public Announcer getDiffuseur() {

@@ -37,8 +37,8 @@ public class ModeleBalise implements EcouteurEvenement {
         this.announcer = controleur.getDiffuseur();
 
         // S'enregistre pour recevoir les événements de synchronisation
-        announcer.enregistrer(Evenement.DEBUT_SYNC, this);
-        announcer.enregistrer(Evenement.FIN_SYNC, this);
+        announcer.register(TypeEvenement.DEBUT_SYNC, this);
+        announcer.register(TypeEvenement.FIN_SYNC, this);
 
         // Démarre le timer pour les remontées périodiques
         demarrerTimerRemontee();
@@ -46,9 +46,9 @@ public class ModeleBalise implements EcouteurEvenement {
 
     @Override
     public void recevoirEvenement(Evenement evt) {
-        if (evt.getType().equals(Evenement.DEBUT_SYNC) && evt.getDonnees() == this) {
+        if (evt.getType().equals(TypeEvenement.DEBUT_SYNC) && evt.getDonnees() == this) {
             demarrerSynchronisation();
-        } else if (evt.getType().equals(Evenement.FIN_SYNC) && evt.getDonnees() == this) {
+        } else if (evt.getType().equals(TypeEvenement.FIN_SYNC) && evt.getDonnees() == this) {
             terminerSynchronisation();
         }
     }
@@ -101,7 +101,7 @@ public class ModeleBalise implements EcouteurEvenement {
             // Si à la surface, notifie sa position une seule fois
             if (estEnSurface() && !enSynchronisation && !aNotifiePosition) {
                 aNotifiePosition = true;
-                announcer.diffuser(new Evenement(this, "BALISE_PRETE",
+                announcer.announce(new Evenement(this, TypeEvenement.BALISE_PRETE,
                         new Controleur.Position(x, Y_SURFACE)));
             }
         }
