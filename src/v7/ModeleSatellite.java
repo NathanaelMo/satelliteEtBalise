@@ -10,7 +10,7 @@ public class ModeleSatellite implements EcouteurEvenement {
         this.x = x;
         this.y = y;
         this.vitesse = vitesse;
-        this.announcer = controleur.getDiffuseur();
+        this.announcer = controleur.getAnnouncer();
 
         // S'enregistre uniquement pour les événements de synchronisation
         announcer.register(TypeEvenement.DEBUT_SYNC, this);

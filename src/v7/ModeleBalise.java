@@ -24,7 +24,7 @@ public class ModeleBalise implements EcouteurEvenement {
     private static final int Y_MAX = 550;      // Profondeur maximale
 
     public enum TypeDeplacement {
-        HORIZONTAL, SINUSOIDAL
+        HORIZONTAL, SINUSOIDAL, STATIQUE
     }
 
     public ModeleBalise(int x, int y, TypeDeplacement typeDeplacement,
@@ -34,7 +34,7 @@ public class ModeleBalise implements EcouteurEvenement {
         this.yOriginal = y;
         this.typeDeplacement = typeDeplacement;
         this.intervalleRemontee = intervalleRemonteeSecondes * 1000; // conversion en millisecondes
-        this.announcer = controleur.getDiffuseur();
+        this.announcer = controleur.getAnnouncer();
 
         // S'enregistre pour recevoir les événements de synchronisation
         announcer.register(TypeEvenement.DEBUT_SYNC, this);
@@ -101,6 +101,7 @@ public class ModeleBalise implements EcouteurEvenement {
             // Si à la surface, notifie sa position une seule fois
             if (estEnSurface() && !enSynchronisation && !aNotifiePosition) {
                 aNotifiePosition = true;
+                // La balise signale qu'elle est prête et envoie sa position
                 announcer.announce(new Evenement(this, TypeEvenement.BALISE_PRETE,
                         new Controleur.Position(x, Y_SURFACE)));
             }
@@ -136,6 +137,8 @@ public class ModeleBalise implements EcouteurEvenement {
                 case SINUSOIDAL:
                     x = (x + 2) % 800;
                     y = (Y_MIN + Y_MAX) / 2 + (int)(50 * Math.sin(x * 0.05));
+                    break;
+                case STATIQUE:
                     break;
             }
         }

@@ -112,7 +112,7 @@ public class Controleur implements EcouteurEvenement {
         announcer.announcerTargeted(new Evenement(this, TypeEvenement.FIN_SYNC, balise), balise);
     }
 
-    public Announcer getDiffuseur() {
+    public Announcer getAnnouncer() {
         return announcer;
     }
 }
